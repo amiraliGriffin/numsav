@@ -15,7 +15,6 @@ CD = {
     "name_ask"  : "لطفا نام و نام خانوادگی خودرا وارد نمایید",
     "confirmation_for_Age" : "سن شما با موفقیت ثبت شد✅\nبا کلیک بر روی دکمه زیر شماره خود را به اشتراک بگذارید\nدر صورتی که مایل به ثبت شماره دیگری هستید شماره خود را وارد کنید",
     "field_ask" : "نام شما با موفقیت ثبت شد✅\nلطفا شغل خود را وارد کنید",
-    "test" :"ok"
 }
 number_persian_dic = {
     "۰" : "0",
@@ -156,7 +155,7 @@ def age(client,message):
         #-----
         request_counter()
     except :
-        client.send_message(CHI,"لطفا از اعداد استفاده کنید")
+        client.send_message(CHI,"❌لطفا از اعداد استفاده کنید")
     raise stop
 @Client.on_message((filters.contact | BotMode("Phone")) & ~filters.command("start") & ~filters.regex("ADMIN_PRIVATE_PANEL"))
 def contact(client,message):

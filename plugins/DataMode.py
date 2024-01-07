@@ -155,7 +155,7 @@ def age(client,message):
         #-----
         request_counter()
     except :
-        client.send_message(CHI,"❌لطفا از اعداد استفاده کنید")
+        client.send_message(CHI,"❌❌لطفا از اعداد استفاده کنید")
     raise stop
 @Client.on_message((filters.contact | BotMode("Phone")) & ~filters.command("start") & ~filters.regex("ADMIN_PRIVATE_PANEL"))
 def contact(client,message):

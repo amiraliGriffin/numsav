@@ -13,8 +13,9 @@ CD = {
     "confirmation_for_Field" : "شغل و حرفه شما با موفقیت ثبت شد✅\nلطفا سن خود را وارد نمایید",
     "register_confirmation" : "اطلاعات شما با موفقیت ثبت شد✅\nمنتظر تماس نمایندگان ما باشید\nدر صورت اشتباه در ثبت اطلاعات یا ثبت اطلاعات برای شخص دیگری مجددا از دستور /start استفاده نمایید",
     "name_ask"  : "لطفا نام و نام خانوادگی خودرا وارد نمایید",
-    "confirmation_for_Age" : "سن شما با موفقیت ثبت شد✅\nبا کلیک بر روی دکمه زیر شماره خود را به اشتراک بگذارید\nدر صورتی که مایل به ثبت شماره دیگری هستید شماره خود را وارد کنید",
+    "confirmation_for_Age" : "سن شما با موفقیت ثبت شد✅\nلطفا ساعت مشاوره خود را انتخاب فرمایید",
     "field_ask" : "نام شما با موفقیت ثبت شد✅\nلطفا شغل و حرفه خود را وارد کنید",
+    "confirmation_for_visit" : "ساعت مشاوره شما با موفقیت ثبت شد✅\nبا کلیک بر روی دکمه زیر شماره خود را به اشتراک بگذارید\nvدر صورتی که مایل به ثبت شماره دیگری هستید شماره خود را وارد کنید"
 }
 number_persian_dic = {
     "۰" : "0",
@@ -145,17 +146,54 @@ def age(client,message):
         kb = ReplyKeyboardMarkup(
                 [
                     [
-                        keyb("اشتراک گذاری تلفن همراه📳",request_contact=True)
+                        "۸ الی ۱۲",
+                        "۱۲ الی ۱۶",
+                        "۱۶ الی ۲۰",
                     ]
                 ]
             )
         client.send_message(CHI,CD["confirmation_for_Age"],reply_markup=kb)
         #----
-        file_put_contents(f"BM/{CHI}.txt","Phone") 
+        file_put_contents(f"BM/{CHI}.txt","visit") 
         #-----
         request_counter()
     except :
         client.send_message(CHI,"❌❌❌لطفا از اعداد استفاده کنید")
+    raise stop
+@Client.on_message(BotMode("visit") & ~filters.command("start") & ~filters.regex("ADMIN_PRIVATE_PANEL"))
+def visit(client,message):
+    CHI  = str(message.chat.id)
+    text = str(message.text)
+    #-----
+    try :
+        x = "a"
+        if text == "۸ الی ۱۲" :
+            x = 1
+        elif text == "۱۲ الی ۱۶" :
+            x = 1
+        elif text == "۱۶ الی ۲۰" :
+            x = 1
+        x = int(x)
+        obj = Jread("DB/db.json")
+        obj[CHI]["Visit"]= text
+        Jwrite("DB/db.json",obj)
+        #-----
+        file_put_contents(f"BM/{CHI}.txt","off")
+        #------
+        kb = ReplyKeyboardMarkup(
+                [
+                    [
+                        keyb("اشتراک گذاری تلفن همراه📳",request_contact=True)
+                    ]
+                ]
+            )
+        client.send_message(CHI,CD["confirmation_for_visit"],reply_markup=kb)
+        #----
+        file_put_contents(f"BM/{CHI}.txt","Phone") 
+        #-----
+        request_counter()
+    except :
+        client.send_message(CHI,"لطفا ساعت مشاوره صحیح را انتخاب کنید❌")
     raise stop
 @Client.on_message((filters.contact | BotMode("Phone")) & ~filters.command("start") & ~filters.regex("ADMIN_PRIVATE_PANEL"))
 def contact(client,message):
@@ -179,8 +217,9 @@ def contact(client,message):
         phone_number = profile["phone_number"]
         field        = profile["field"]
         Age          = profile["Age"]
+        visit        = profile["Visit"]
         #------
-        txt = f"🔹نام و نام خانوادگی = {name}\n🔹شماره تماس= {phone_number}\n🔹سن = {Age}\n🔹رشته = {field}\n🔹دسترسی به کاربر = [find me here](tg://user?id={CHI})\n🔹آیدی = {username}"
+        txt = f"🔹نام و نام خانوادگی = {name}\n🔹شماره تماس= {phone_number}\n🔹سن = {Age}\n🔹رشته = {field}\n🔹دسترسی به کاربر = [find me here](tg://user?id={CHI})\n🔹آیدی = {username}\n🔹ساعت مشاوره : {visit}"
         client.send_message(chanID,txt,parse_mode=enums.ParseMode.MARKDOWN)
         #----
         client.send_message(CHI,CD["register_confirmation"],reply_markup=Kremover())
@@ -211,8 +250,9 @@ def contact(client,message):
                 phone_number = profile["phone_number"]
                 field        = profile["field"]
                 Age          = profile["Age"]
+                visit        = profile["Visit"]
                 #------
-                txt = f"🔹نام و نام خانوادگی = {name}\n🔹شماره تماس= {phone_number}\n🔹رشته = {field}\n🔹دسترسی به کاربر = [find me here](tg://user?id={CHI})\n🔹آیدی = {username}"
+                txt = f"🔹نام و نام خانوادگی = {name}\n🔹شماره تماس= {phone_number}\n🔹رشته = {field}\n🔹دسترسی به کاربر = [find me here](tg://user?id={CHI})\n🔹آیدی = {username}\n🔹ساعت مشاوره : {visit}"
                 client.send_message(chanID,txt,parse_mode=enums.ParseMode.MARKDOWN)
                 #----
                 client.send_message(CHI,CD["register_confirmation"],reply_markup=Kremover())

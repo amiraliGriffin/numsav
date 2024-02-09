@@ -10,12 +10,10 @@ import json
 #-----------
 CD = {
     "err_check_num" : "لطفا از اعداد در نام خود استفاده نکنید",
-    "confirmation_for_Field" : "شغل و حرفه شما با موفقیت ثبت شد✅\nلطفا سن خود را وارد نمایید",
     "register_confirmation" : "اطلاعات شما با موفقیت ثبت شد✅\nمنتظر تماس نمایندگان ما باشید\nدر صورت اشتباه در ثبت اطلاعات یا ثبت اطلاعات برای شخص دیگری مجددا از دستور /start استفاده نمایید",
     "name_ask"  : "لطفا نام و نام خانوادگی خودرا وارد نمایید",
-    "confirmation_for_Age" : "سن شما با موفقیت ثبت شد✅\nلطفا ساعت مشاوره خود را انتخاب فرمایید",
-    "field_ask" : "نام شما با موفقیت ثبت شد✅\nلطفا شغل و حرفه خود را وارد کنید",
-    "confirmation_for_visit" : "ساعت مشاوره شما با موفقیت ثبت شد✅\nبا کلیک بر روی دکمه زیر شماره خود را به اشتراک بگذارید\nvدر صورتی که مایل به ثبت شماره دیگری هستید شماره خود را وارد کنید"
+    "confirmation_name" : "نام شما با موفقیت ثبت شد✅\nبا کلیک بر روی دکمه زیر شماره خود را به اشتراک بگذارید\nدر صورتی که مایل به ثبت شماره دیگری هستید شماره خود را وارد کنید",
+    "confirmation_phone" : "شماره شما با موفقیت ثبت شد✅\nلطفا ساعت مشاوره خود را انتخاب کنید"
 }
 number_persian_dic = {
     "۰" : "0",
@@ -108,62 +106,26 @@ def greet(client,message):
             obj[CHI] = {"name" : text}
             Jwrite("DB/db.json",obj)
         #-----
-        client.send_message(CHI,CD["field_ask"])
-        file_put_contents(f"BM/{CHI}.txt","Field")
-        #-----
-    request_counter()
-    raise stop
-@Client.on_message(BotMode("Field") & ~filters.command("start") & ~filters.regex("ADMIN_PRIVATE_PANEL"))
-def field(client,message):
-    CHI  = str(message.chat.id)
-    text = str(message.text)
-    #-----
-    obj = Jread("DB/db.json")
-    obj[CHI]["field"]= text
-    Jwrite("DB/db.json",obj)
-    #-----
-    file_put_contents(f"BM/{CHI}.txt","off")
-    #------
-    client.send_message(CHI,CD["confirmation_for_Field"])
-    #----
-    file_put_contents(f"BM/{CHI}.txt","Age")
-    #-----
-    request_counter()
-    raise stop
-@Client.on_message(BotMode("Age") & ~filters.command("start") & ~filters.regex("ADMIN_PRIVATE_PANEL"))
-def age(client,message):
-    CHI  = str(message.chat.id)
-    text = str(message.text)
-    #-----
-    try :
-        check = int(text)
-        obj = Jread("DB/db.json")
-        obj[CHI]["Age"]= text
-        Jwrite("DB/db.json",obj)
-        #-----
-        file_put_contents(f"BM/{CHI}.txt","off")
-        #------
         kb = ReplyKeyboardMarkup(
                 [
                     [
-                        "۸ الی ۱۲",
-                        "۱۲ الی ۱۶",
-                        "۱۶ الی ۲۰",
+                        keyb("اشتراک گذاری تلفن همراه📳",request_contact=True)
                     ]
                 ]
             )
-        client.send_message(CHI,CD["confirmation_for_Age"],reply_markup=kb)
+        client.send_message(CHI,CD["confirmation_name"],reply_markup=kb)
         #----
-        file_put_contents(f"BM/{CHI}.txt","visit") 
+        file_put_contents(f"BM/{CHI}.txt","Phone")
         #-----
-        request_counter()
-    except :
-        client.send_message(CHI,"❌❌❌لطفا از اعداد استفاده کنید")
+    request_counter()
     raise stop
 @Client.on_message(BotMode("visit") & ~filters.command("start") & ~filters.regex("ADMIN_PRIVATE_PANEL"))
 def visit(client,message):
     CHI  = str(message.chat.id)
     text = str(message.text)
+    username = "@" + str(message.from_user.username)
+    if username == "@None" :
+        username = "❌"
     #-----
     try :
         x = "a"
@@ -180,16 +142,20 @@ def visit(client,message):
         #-----
         file_put_contents(f"BM/{CHI}.txt","off")
         #------
-        kb = ReplyKeyboardMarkup(
-                [
-                    [
-                        keyb("اشتراک گذاری تلفن همراه📳",request_contact=True)
-                    ]
-                ]
-            )
-        client.send_message(CHI,CD["confirmation_for_visit"],reply_markup=kb)
+        chanID = -1002025719431
+        obj = Jread("DB/db.json")
+        profile = obj[CHI]
+        #------
+        name         = profile["name"]
+        phone_number = profile["phone_number"]
+        visit        = profile["Visit"]
+        #------
+        txt = f"🔹نام و نام خانوادگی = {name}\n🔹شماره تماس= {phone_number}\n🔹دسترسی به کاربر = [find me here](tg://user?id={CHI})\n🔹آیدی = {username}\n🔹ساعت مشاوره : {visit}"
+        client.send_message(chanID,txt,parse_mode=enums.ParseMode.MARKDOWN)
         #----
-        file_put_contents(f"BM/{CHI}.txt","Phone") 
+        client.send_message(CHI,CD["register_confirmation"],reply_markup=Kremover())
+        #----
+        file_put_contents(f"BM/{CHI}.txt","off")
         #-----
         request_counter()
     except :
@@ -199,9 +165,6 @@ def visit(client,message):
 def contact(client,message):
     CHI   = str(message.chat.id)
     text  = message.text
-    username = "@" + str(message.from_user.username)
-    if username == "@None" :
-        username = "❌"
     try :
         phone = message.contact.phone_number
         #-----
@@ -209,22 +172,16 @@ def contact(client,message):
         obj[CHI]["phone_number"] = phone 
         Jwrite("DB/db.json",obj)
         #------
-        chanID = -1002025719431
-        obj = Jread("DB/db.json")
-        profile = obj[CHI]
-        #------
-        name         = profile["name"]
-        phone_number = profile["phone_number"]
-        field        = profile["field"]
-        Age          = profile["Age"]
-        visit        = profile["Visit"]
-        #------
-        txt = f"🔹نام و نام خانوادگی = {name}\n🔹شماره تماس= {phone_number}\n🔹سن = {Age}\n🔹رشته = {field}\n🔹دسترسی به کاربر = [find me here](tg://user?id={CHI})\n🔹آیدی = {username}\n🔹ساعت مشاوره : {visit}"
-        client.send_message(chanID,txt,parse_mode=enums.ParseMode.MARKDOWN)
-        #----
-        client.send_message(CHI,CD["register_confirmation"],reply_markup=Kremover())
-        #----
-        file_put_contents(f"BM/{CHI}.txt","off")
+        kb = ReplyKeyboardMarkup([
+            [
+                "۸ الی ۱۲",
+                "۱۲ الی ۱۶",
+                "۱۶ الی ۲۰"
+            ]
+
+        ])
+        client.send_message(CHI,CD["confirmation_phone"],reply_markup=kb)
+        file_put_contents(f"BM/{CHI}.txt","visit")
     except :
         try :
             text = str(text)
@@ -236,28 +193,22 @@ def contact(client,message):
             for num in phone :
                 cnt+=1
             #-----
-            phone = int(phone)
+            phone = str(int(phone))
             if cnt == 10 :
                 obj = Jread("DB/db.json")
                 obj[CHI]["phone_number"] = phone 
                 Jwrite("DB/db.json",obj)
                 #------
-                chanID = -1002025719431
-                obj = Jread("DB/db.json")
-                profile = obj[CHI]
-                #------
-                name         = profile["name"]
-                phone_number = profile["phone_number"]
-                field        = profile["field"]
-                Age          = profile["Age"]
-                visit        = profile["Visit"]
-                #------
-                txt = f"🔹نام و نام خانوادگی = {name}\n🔹شماره تماس= {phone_number}\n🔹رشته = {field}\n🔹دسترسی به کاربر = [find me here](tg://user?id={CHI})\n🔹آیدی = {username}\n🔹ساعت مشاوره : {visit}"
-                client.send_message(chanID,txt,parse_mode=enums.ParseMode.MARKDOWN)
-                #----
-                client.send_message(CHI,CD["register_confirmation"],reply_markup=Kremover())
-                #----
-                file_put_contents(f"BM/{CHI}.txt","off")
+                kb = ReplyKeyboardMarkup([
+                    [
+                        "۸ الی ۱۲",
+                        "۱۲ الی ۱۶",
+                        "۱۶ الی ۲۰"
+                    ]
+
+                ])
+                client.send_message(CHI,CD["confirmation_phone"],reply_markup=kb)
+                file_put_contents(f"BM/{CHI}.txt","visit")
             else :
                 raise Exception("digit style incorrect")
         except :

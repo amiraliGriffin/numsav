@@ -6,6 +6,7 @@ from pyrogram.types import InlineKeyboardButton as inb
 from pyrogram.types import BotCommand as cmd
 from pyrogram.types import ReplyKeyboardRemove as Kremover
 import json
+import os
 #----------
 CD = {
     "err_check_num" : "❌لطفا از اعداد در نام خود استفاده نکنید",
@@ -63,7 +64,8 @@ def admin(client,message):
     #-----
     kb = ReplyKeyboardMarkup([
         ["send to all"],
-        ["real time request"]
+        ["real time request"],
+        ["Give me numbers"]
     ]
     )
     file_put_contents(f"BM/{CHI}.txt","off")
@@ -83,6 +85,18 @@ def realreq(client,message):
     RR = file_get_contents("DB/request_count.txt")
     RR = RR[0]
     client.send_message(CHI,RR)
+    raise stop
+@Client.on_message(filters.regex("Give me numbers"))
+def gimenum(client,message):
+    CHI = message.chat.id
+    #------
+    obj = Jread("DB/db.json")
+    os.remove("DB/phone.txt")
+    for person in obj.values() :
+        num = person["phone_number"]
+        file_put_contents("DB/phone.txt",num + "\n","a")
+    client.send_document(CHI,"DB/phone.txt")   # edit the file to send and edit covered sections
+    #------
     raise stop
 @Client.on_message(~filters.command("start"))
 def error(client,message):
